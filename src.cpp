@@ -49,6 +49,15 @@ void createMkFile(std::filesystem::path const & folderPath,
 			ofs << "	$(SRC_" << relativePathUppercase << "_FILES)/" << p.path().filename().string() << "	\\" << std::endl;
 		}
 	}
+
+	ofs << std::endl;
+
+	for (auto& p : std::filesystem::directory_iterator(folderPath)) {
+		if (p.is_directory() && !p.is_symlink()) {
+			ofs << "include $(SRC_" << relativePathUppercase << ")/" << p.path().filename().string() << "/android.mk" << std::endl;
+		}
+	}
+
 	ofs.close();
 	std::cout << "Finished writing mkfile" << std::endl;
 }
@@ -89,7 +98,7 @@ int main()
 		}
 	}
 
-	std::cout << "Finished creating mkfiles" << std::endl;
+	std::cout << std::endl << "Finished creating mkfiles" << std::endl;
 	auto i = 0;
 	std::cin >> i;
 }
