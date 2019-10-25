@@ -23,14 +23,28 @@ bool createDirectory(std::string const & path) {
 	}
 }
 
+void createRootFile() {
+	std::ofstream ofs("output/android.mk");
+	ofs << "#root" << std::endl << std::endl;
+
+	ofs << "LOCAL_PATH:= $(call my-dir)" << std::endl << std::endl
+		<< "SRC := $(LOCAL_PATH)" << std::endl << std::endl
+		<< "LOCAL_EXPORT_C_INCLUDES := $(call TOP_PATH)../" << std::endl << std::endl;
+
+	for (auto& p : std::filesystem::directory_iterator("source")) {
+		if (p.is_directory() && !p.is_symlink()) {
+			ofs << "include $(SRC)/" << p.path().filename().string() << "/android.mk" << std::endl;
+		}
+	}
+	ofs.close();
+}
+
 void createMkFile(std::filesystem::path const & folderPath,
 				  std::string const & filename,
-				  std::string const & folderName,
 				  std::string const & source) {
 
 	std::string relativePath(folderPath.string(), source.length());
 	std::replace(relativePath.begin(), relativePath.end(), '\\', '/');
-
 	std::string relativePathUppercase(relativePath, 1);
 	std::for_each(relativePathUppercase.begin(), relativePathUppercase.end(), [](char & c) {
 		c = ::toupper(c);
@@ -71,7 +85,6 @@ std::string getMkFilename(std::string const & path) {
 	filename.append(path).append(NAME);
 	std::cout << "Filename: " << filename << std::endl;
 	
-
 	return std::move(filename);
 }
 
@@ -81,6 +94,14 @@ int main()
 	constexpr auto* const OUTPUT = "output";
 	constexpr auto const OUTPUT_LENGTH = 6;
 	createDirectory(OUTPUT);
+
+	{
+		createRootFile();
+
+		std::cout << "Done" << std::endl;
+		int i = 0;
+		while (std::cin >> i);
+	}
 
 	for (auto& p : std::filesystem::recursive_directory_iterator(SOURCE)) {
 		if (p.is_directory() && !p.is_symlink()) {
@@ -92,7 +113,6 @@ int main()
 			if (directoryExists) {
 				createMkFile(p.path(),
 							 getMkFilename(folderToCreate),
-							 p.path().stem().string(),
 							 SOURCE);
 			}
 		}
