@@ -45,7 +45,7 @@ void createMkFile(std::filesystem::path const & folderPath,
 	ofs << "LOCAL_EXPORT_C_INCLUDES := $(call TOP_PATH)../" << std::endl << std::endl;
 	ofs << "LOCAL_SRC_FILES += \\" << std::endl;
 	for (auto& p : std::filesystem::directory_iterator(folderPath)) {
-		if (!p.is_directory()) {
+		if (!p.is_directory() && p.path().extension().string().compare(".cpp") == 0) {
 			ofs << "	$(SRC_" << relativePathUppercase << "_FILES)/" << p.path().filename().string() << "	\\" << std::endl;
 		}
 	}
